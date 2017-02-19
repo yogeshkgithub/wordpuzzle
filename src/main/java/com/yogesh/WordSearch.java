@@ -1,6 +1,8 @@
 package com.yogesh;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -13,11 +15,10 @@ public class WordSearch {
 	private char[][] puzzlegrid;
 	private List<String> words;
 	private HashMap<String, WordResult> result = new HashMap<String, WordResult>();
-	private final static String PUZZLE_FILE = "test.txt";
-	private final static String WORDS_FILE = "WordList.txt";
+	
 	private static int min_word_size = 999999999;
 
-	private class WordResult {
+	/*private class WordResult {
 
 		String word;
 		int at_x;
@@ -34,13 +35,19 @@ public class WordSearch {
 
 	}
 
+*/	
+	
+	
 	private List<String> readFile(String fileName) {
 
 		List<String> filelist = new ArrayList<String>();
 
 		try {
+			
 			InputStream in = WordSearch.class.getResourceAsStream(fileName);
+			//InputStream in = WordSearch.class.getClass().getClassLoader().getResourceAsStream(fileName);
 			BufferedReader bufferedReader1 = new BufferedReader(new InputStreamReader(in));
+			//BufferedReader bufferedReader1 = new BufferedReader(fileReader);
 			StringBuffer stringBuffer = new StringBuffer();
 			String line;
 			while ((line = bufferedReader1.readLine()) != null) {
@@ -52,9 +59,18 @@ public class WordSearch {
 			//
 			System.out.println("Error Reading File");
 			System.exit(1);
+			
 		}
 
 		return filelist;
+	}
+
+	public HashMap<String, WordResult> getResult() {
+		return result;
+	}
+
+	public void setResult(HashMap<String, WordResult> result) {
+		this.result = result;
 	}
 
 	/**
@@ -64,13 +80,13 @@ public class WordSearch {
 	 * @Return char[][]
 	 * 
 	 */
-	public char[][] setPuzzlegrid() {
+	public char[][] setPuzzlegrid(String filename) {
 
 		List<String> filelist;// = new ArrayList<String>();
 		char[][] puzzle;
 
 		try {
-			filelist = readFile(PUZZLE_FILE);
+			filelist = readFile(filename);
 			int rows = filelist.size();
 			int columns = filelist.get(0).length();
 			puzzle = new char[rows][columns];
@@ -94,7 +110,7 @@ public class WordSearch {
 
 	public void printPuzzlegrid() {
 
-		System.out.println("GRID");
+		System.out.println("---GRID---");
 
 		for (int i = 0; i < puzzlegrid[0].length; i++) {
 
@@ -124,10 +140,10 @@ public class WordSearch {
 	 * 
 	 * @return
 	 */
-	public List<String> setWords() {
+	public List<String> setWords(String filename) {
 
 		List<String> filelist;
-		filelist = readFile(WORDS_FILE);
+		filelist = readFile(filename);
 		this.words = filelist;
 		Collections.sort(words);// sort since Binarysearch will be used
 		for (int i = 0; i < filelist.size(); i++) {
@@ -162,18 +178,6 @@ public class WordSearch {
 
 		}
 
-		// System.out.println(words.size());
-		//
-		// for (String key : result.keySet()) {
-		// // System.out.println(key );
-		// System.out.println(result.get(key).word + " " + "at (" +
-		// result.get(key).at_x + " " + result.get(key).at_y
-		// + ") " + result.get(key).direction);
-		//
-		// }
-		//
-		// System.out.println(result.size());
-		//
 	}
 
 	/**
@@ -225,7 +229,6 @@ public class WordSearch {
 		// for (int l = 0; l <diagLimit; l++)
 		while (i < rows && j < columns) {
 
-			// check Left to Right
 			currentWord = currentWord.append(puzzlegrid[i][j]);
 			if (currentWord.length() >= min_word_size) {
 
@@ -234,11 +237,11 @@ public class WordSearch {
 					// result.put(currentWord.toString(), "DDR");
 					result.put(currentWord.toString(), new WordResult(currentWord.toString(), x_start, y_start, "DDR"));
 				}
-				// check Right To Left
+
 				currentWord.reverse();
 				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
 					// result.put(currentWord.toString(), "DUL");
-					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, j, "DDL"));
+					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, j, "DUL"));
 				}
 				currentWord.reverse();
 			}
@@ -249,6 +252,15 @@ public class WordSearch {
 
 	}
 
+	/**
+	 * Search DDL  n DDR
+	 * 
+	 * @param i
+	 * @param j
+	 * @param columns
+	 * @param rows
+	 */
+	
 	private void searchLefttDiagonal(int i, int j, int columns, int rows) {
 		// TODO Auto-generated method stub
 
@@ -284,6 +296,13 @@ public class WordSearch {
 
 	}
 
+	
+	
+	
+	
+	
+	
+	
 	private void searchUpandDown(int i, int j, int maxrows) {
 		// TODO Auto-generated method stub
 
@@ -312,15 +331,5 @@ public class WordSearch {
 		}
 
 	}
-
-//	public static void main(String args[]) {
-//		WordSearch ws = new WordSearch();
-//		ws.setPuzzlegrid();
-//		ws.setWords();
-//		ws.printPuzzlegrid();
-//		ws.solvePuzzle();
-//		ws.printResult();
-//
-//	}
 
 }
