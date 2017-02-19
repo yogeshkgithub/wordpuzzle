@@ -18,24 +18,7 @@ public class WordSearch {
 	
 	private static int min_word_size = 999999999;
 
-	/*private class WordResult {
-
-		String word;
-		int at_x;
-		int at_y;
-		String direction;
-
-		WordResult(String word, int x, int y, String direction) {
-			this.word = word;
-			this.at_x = x;
-			this.at_y = y;
-			this.direction = direction;
-
-		}
-
-	}
-
-*/	
+	
 	
 	
 	private List<String> readFile(String fileName) {
@@ -111,10 +94,12 @@ public class WordSearch {
 	public void printPuzzlegrid() {
 
 		System.out.println("---GRID---");
+		int rows=puzzlegrid.length;
+		int cols=puzzlegrid[0].length;
 
-		for (int i = 0; i < puzzlegrid[0].length; i++) {
+		for (int i = 0; i < rows; i++) {
 
-			for (int j = 0; j < puzzlegrid.length; j++) {
+			for (int j = 0; j < cols; j++) {
 				System.out.print(puzzlegrid[i][j]);
 
 			}
@@ -128,8 +113,8 @@ public class WordSearch {
 		System.out.println("Printing Puzzle Solution");
 		System.out.println("Found " + result.size() + " Words");
 		for (String key : result.keySet()) {
-			System.out.println(result.get(key).word + " " + "at (" + result.get(key).at_x + " " + result.get(key).at_y
-					+ ") " + result.get(key).direction);
+			System.out.println(result.get(key).getWord() + " " + "at (" + result.get(key).getAt_x() + " " + result.get(key).getAt_y()
+					+ ") " + result.get(key).getDirection());
 
 		}
 

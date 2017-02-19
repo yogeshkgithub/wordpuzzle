@@ -34,10 +34,10 @@ package com.yogesh;
 		this.direction = direction;
 	}
 
-	String word;
-	int at_x;
-	int at_y;
-	String direction;
+	private String word;
+	private int at_x;
+	private int at_y;
+	private String direction;
 
 	WordResult(String word, int x, int y, String direction) {
 		this.word = word;
