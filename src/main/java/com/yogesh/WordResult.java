@@ -1,4 +1,9 @@
 package com.yogesh;
+/**
+ * 
+ * @author 
+ *
+ */
 
  public class WordResult {
 

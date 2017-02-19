@@ -1,8 +1,7 @@
+
 package com.yogesh;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -10,50 +9,235 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * 
+ * 
+ * @author X8FP
+ *
+ */
+
 public class WordSearch {
 
+	private static int min_word_size = 999999999;
 	private char[][] puzzlegrid;
 	private List<String> words;
 	private HashMap<String, WordResult> result = new HashMap<String, WordResult>();
-	
-	private static int min_word_size = 999999999;
 
-	
-	
-	
-	private List<String> readFile(String fileName) {
-
-		List<String> filelist = new ArrayList<String>();
-
-		try {
-			
-			InputStream in = WordSearch.class.getResourceAsStream(fileName);
-			//InputStream in = WordSearch.class.getClass().getClassLoader().getResourceAsStream(fileName);
-			BufferedReader bufferedReader1 = new BufferedReader(new InputStreamReader(in));
-			//BufferedReader bufferedReader1 = new BufferedReader(fileReader);
-			StringBuffer stringBuffer = new StringBuffer();
-			String line;
-			while ((line = bufferedReader1.readLine()) != null) {
-				filelist.add(line.toUpperCase().replaceAll("\\s", ""));
-				stringBuffer.append(line);
-				stringBuffer.append("\n");
-			}
-		} catch (Exception e) {
-			//
-			System.out.println("Error Reading File");
-			System.exit(1);
-			
-		}
-
-		return filelist;
+	public char[][] getPuzzlegrid() {
+		return puzzlegrid;
 	}
 
 	public HashMap<String, WordResult> getResult() {
 		return result;
 	}
 
-	public void setResult(HashMap<String, WordResult> result) {
-		this.result = result;
+	public void printPuzzlegrid() {
+
+		System.out.println("---GRID---");
+		int rows = puzzlegrid.length;
+		int cols = puzzlegrid[0].length;
+
+		for (int i = 0; i < rows; i++) {
+
+			for (int j = 0; j < cols; j++) {
+				System.out.print(puzzlegrid[i][j]);
+			}
+			System.out.println();
+		}
+
+	}
+
+	/**
+	 * 
+	 */
+
+	public void printResult() {
+		System.out.println();
+		System.out.println("Printing Puzzle Solution");
+		System.out.println("Found " + result.size() + " Words");
+		for (String key : result.keySet()) {
+			System.out.println(result.get(key).getWord() + " " + "at (" + result.get(key).getAt_x() + " "
+					+ result.get(key).getAt_y() + ") " + result.get(key).getDirection());
+
+		}
+
+	}
+/**
+ * 
+ * @param fileName
+ * @return
+ */
+	private List<String> readFile(String fileName) {
+
+		List<String> filelist = new ArrayList<String>();
+
+		try {
+
+			InputStream in = WordSearch.class.getResourceAsStream(fileName);
+			BufferedReader bufferedReader1 = new BufferedReader(new InputStreamReader(in));
+			// StringBuffer stringBuffer = new StringBuffer();
+			String line;
+			while ((line = bufferedReader1.readLine()) != null) {
+				filelist.add(line.toUpperCase().replaceAll("\\s", ""));
+				// stringBuffer.append(line);
+				// stringBuffer.append("\n");
+			}
+		} catch (Exception e) {
+			//
+			System.out.println("Error Reading File");
+			System.exit(1);
+
+		}
+
+		return filelist;
+	}
+
+	/**
+	 * Search DDL n DDR
+	 * 
+	 * @param i
+	 * @param j
+	 * @param columns
+	 * @param rows
+	 */
+
+	private void searchLefttDiagonal(int i, int j, int columns, int rows) {
+		// TODO Auto-generated method stub
+
+		StringBuilder currentWord = new StringBuilder();
+		// StringBuilder currentWordReversed= new StringBuilder();
+
+		int x_start = i;
+		int y_start = j;
+		// for (int l = 0; l <diagLimit; l++)
+		while (i < rows && j >= 0) {
+
+			// check Left to Right
+			currentWord = currentWord.append(puzzlegrid[i][j]);
+			if (currentWord.length() >= min_word_size) {
+
+				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
+
+					result.put(currentWord.toString(), new WordResult(currentWord.toString(), x_start, y_start, Direction.DDL.direction()));
+					// result.put(currentWord.toString(), "DDL");
+				}
+				// check Right To Left
+				currentWord.reverse();
+				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
+					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, j, Direction.DUR.direction()));
+					// result.put(currentWord.toString(), "DUR");
+				}
+				currentWord.reverse();
+			}
+
+			i++;
+			j--;
+		}
+
+	}
+
+	/**
+	 * Method to move right in the grid for current row. add each character as
+	 * you move and check if it exists in the word to find
+	 * 
+	 * @param i
+	 * @param j
+	 * @param word
+	 * @param columns
+	 * @return
+	 */
+	private void searchRightandLeft(int i, int j, int columns) {
+
+		StringBuilder currentWord = new StringBuilder();
+		// StringBuilder currentWordReversed= new StringBuilder();
+
+		for (int l = j; l < columns; l++) {
+			// check Left to Right
+			currentWord = currentWord.append(puzzlegrid[i][l]);
+			if (currentWord.length() >= min_word_size) {
+
+				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
+					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, j, Direction.LR.direction()));
+					// result.put(currentWord.toString(), "LR");
+				}
+				// check Right To Left
+				currentWord.reverse();
+				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
+					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, l, Direction.RL.direction()));
+					// result.put(currentWord.toString(), "RL");
+				}
+				currentWord.reverse();
+			}
+
+		}
+
+	}
+
+	/**
+	 * Look DDR and DUL
+	 * 
+	 * @param i
+	 * @param j
+	 * @param columns
+	 * @param rows
+	 */
+	
+	private void searchRightDiagonal(int i, int j, int columns, int rows) {
+		// TODO Auto-generated method stub
+
+		StringBuilder currentWord = new StringBuilder();
+		// StringBuilder currentWordReversed= new StringBuilder();
+		int x_start = i;
+		int y_start = j;
+
+		// for (int l = 0; l <diagLimit; l++)
+		while (i < rows && j < columns) {
+
+			currentWord = currentWord.append(puzzlegrid[i][j]);
+			if (currentWord.length() >= min_word_size) {
+
+				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
+
+					result.put(currentWord.toString(), new WordResult(currentWord.toString(), x_start, y_start, Direction.DDR.direction()));
+				}
+				currentWord.reverse();
+				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
+
+					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, j, Direction.DUL.direction()));
+				}
+				currentWord.reverse();
+			}
+
+			i++;
+			j++;
+		}
+
+	}
+
+	private void searchUpandDown(int i, int j, int maxrows) {
+		// TODO Auto-generated method stub
+
+		StringBuilder currentWord = new StringBuilder();
+		// StringBuilder currentWordReversed= new StringBuilder();
+
+		for (int l = i; l < maxrows; l++) {
+			// check Left to Right
+			currentWord = currentWord.append(puzzlegrid[l][j]);
+			if (currentWord.length() >= min_word_size) {
+
+				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
+					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, j, Direction.D.direction()));
+				}
+
+				currentWord.reverse();
+				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
+					result.put(currentWord.toString(), new WordResult(currentWord.toString(), l, j, Direction.U.direction()));
+				}
+				currentWord.reverse();
+			}
+
+		}
+
 	}
 
 	/**
@@ -87,37 +271,13 @@ public class WordSearch {
 		return this.puzzlegrid;
 	}
 
-	public char[][] getPuzzlegrid() {
-		return puzzlegrid;
-	}
-
-	public void printPuzzlegrid() {
-
-		System.out.println("---GRID---");
-		int rows=puzzlegrid.length;
-		int cols=puzzlegrid[0].length;
-
-		for (int i = 0; i < rows; i++) {
-
-			for (int j = 0; j < cols; j++) {
-				System.out.print(puzzlegrid[i][j]);
-
-			}
-			System.out.println();
-		}
-
-	}
-
-	public void printResult() {
-		System.out.println();
-		System.out.println("Printing Puzzle Solution");
-		System.out.println("Found " + result.size() + " Words");
-		for (String key : result.keySet()) {
-			System.out.println(result.get(key).getWord() + " " + "at (" + result.get(key).getAt_x() + " " + result.get(key).getAt_y()
-					+ ") " + result.get(key).getDirection());
-
-		}
-
+	/**
+	 * 
+	 * @param result
+	 */
+	
+	public void setResult(HashMap<String, WordResult> result) {
+		this.result = result;
 	}
 
 	/**
@@ -142,175 +302,17 @@ public class WordSearch {
 
 	/**
 	 * 
-	 * 
-	 * 
-	 * 
 	 */
 
 	public void solvePuzzle() {
-		// TODO Auto-generated method stub
 		int rows = puzzlegrid.length;
 		int columns = puzzlegrid[0].length;
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < columns; j++) {
-
 				searchRightandLeft(i, j, columns);
 				searchUpandDown(i, j, rows);
 				searchRightDiagonal(i, j, columns, rows);
 				searchLefttDiagonal(i, j, columns, rows);
-
-			}
-
-		}
-
-	}
-
-	/**
-	 * Method to move right in the grid for current row. add each character as
-	 * you move and check if it exists in the word to find
-	 * 
-	 * @param i
-	 * @param j
-	 * @param word
-	 * @param columns
-	 * @return
-	 */
-	private void searchRightandLeft(int i, int j, int columns) {
-		// TODO Auto-generated method stub
-
-		StringBuilder currentWord = new StringBuilder();
-		// StringBuilder currentWordReversed= new StringBuilder();
-
-		for (int l = j; l < columns; l++) {
-			// check Left to Right
-			currentWord = currentWord.append(puzzlegrid[i][l]);
-			if (currentWord.length() >= min_word_size) {
-
-				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
-					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, j, "LR"));
-					// result.put(currentWord.toString(), "LR");
-				}
-				// check Right To Left
-				currentWord.reverse();
-				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
-					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, l, "RL"));
-					// result.put(currentWord.toString(), "RL");
-				}
-				currentWord.reverse();
-			}
-
-		}
-
-	}
-
-	private void searchRightDiagonal(int i, int j, int columns, int rows) {
-		// TODO Auto-generated method stub
-
-		StringBuilder currentWord = new StringBuilder();
-		// StringBuilder currentWordReversed= new StringBuilder();
-		int x_start = i;
-		int y_start = j;
-
-		// for (int l = 0; l <diagLimit; l++)
-		while (i < rows && j < columns) {
-
-			currentWord = currentWord.append(puzzlegrid[i][j]);
-			if (currentWord.length() >= min_word_size) {
-
-				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
-
-					// result.put(currentWord.toString(), "DDR");
-					result.put(currentWord.toString(), new WordResult(currentWord.toString(), x_start, y_start, "DDR"));
-				}
-
-				currentWord.reverse();
-				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
-					// result.put(currentWord.toString(), "DUL");
-					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, j, "DUL"));
-				}
-				currentWord.reverse();
-			}
-
-			i++;
-			j++;
-		}
-
-	}
-
-	/**
-	 * Search DDL  n DDR
-	 * 
-	 * @param i
-	 * @param j
-	 * @param columns
-	 * @param rows
-	 */
-	
-	private void searchLefttDiagonal(int i, int j, int columns, int rows) {
-		// TODO Auto-generated method stub
-
-		StringBuilder currentWord = new StringBuilder();
-		// StringBuilder currentWordReversed= new StringBuilder();
-
-		int x_start = i;
-		int y_start = j;
-		// for (int l = 0; l <diagLimit; l++)
-		while (i < rows && j >= 0) {
-
-			// check Left to Right
-			currentWord = currentWord.append(puzzlegrid[i][j]);
-			if (currentWord.length() >= min_word_size) {
-
-				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
-
-					result.put(currentWord.toString(), new WordResult(currentWord.toString(), x_start, y_start, "DDL"));
-					// result.put(currentWord.toString(), "DDL");
-				}
-				// check Right To Left
-				currentWord.reverse();
-				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
-					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, j, "DUR"));
-					// result.put(currentWord.toString(), "DUR");
-				}
-				currentWord.reverse();
-			}
-
-			i++;
-			j--;
-		}
-
-	}
-
-	
-	
-	
-	
-	
-	
-	
-	private void searchUpandDown(int i, int j, int maxrows) {
-		// TODO Auto-generated method stub
-
-		StringBuilder currentWord = new StringBuilder();
-		// StringBuilder currentWordReversed= new StringBuilder();
-
-		for (int l = i; l < maxrows; l++) {
-			// check Left to Right
-			currentWord = currentWord.append(puzzlegrid[l][j]);
-			if (currentWord.length() >= min_word_size) {
-
-				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
-
-					result.put(currentWord.toString(), new WordResult(currentWord.toString(), i, j, "D"));
-					// result.put(currentWord.toString(), "D");
-				}
-				// check Right To Left
-				currentWord.reverse();
-				if (Collections.binarySearch(words, currentWord.toString()) >= 0) {
-					result.put(currentWord.toString(), new WordResult(currentWord.toString(), l, j, "U"));
-					// result.put(currentWord.toString(), "U");
-				}
-				currentWord.reverse();
 			}
 
 		}
